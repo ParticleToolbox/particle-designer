@@ -1,0 +1,148 @@
+<script>
+
+  class Particle {
+    
+    constructor(diameter, density, assay) {
+     this.diameter = diameter || 0.0007;
+     this.density = density || 1.5e+6;
+     this.assay = assay || 0;
+     this.totalWeight = 1;
+    }
+    
+    get radius() {
+      return this.diameter / 2;
+    }
+    
+    get bulkDensity() {
+      return this.density * 0.74048;
+    } 
+    
+    get surfaceArea() {
+      return 4 * Math.PI * Math.pow(this.radius, 2);
+    }
+    
+    get volume() {
+      return (4/3) * Math.PI * Math.pow(this.radius, 3);
+    }
+    
+    get count() {
+      return Math.ceil(this.totalWeight / this.density / this.volume); 
+    }
+    
+    get totalSurfaceArea() {
+      return this.surfaceArea * this.count;
+    }
+     
+    get surfaceAreaToVolume() {
+      return this.surfaceArea / this.volume;
+    }
+  }
+  
+  class Coating {
+    
+    constructor(weightGain, density) {
+      this.weightGain = weightGain || 0.03;
+      this.density = this.density || 1.0e+6;
+      this.drugPortion = 0;
+    }
+    
+    get drugWeightGain() {
+      return this.weightGain * this.drugPortion;
+    }
+  }
+  
+  class CoatedParticle {
+    
+    constructor(startingParticle, coating) {
+      this.startingParticle = startingParticle || new Particle();;
+      this.coating = coating;
+    }
+    
+    get diameter() {
+      let step1 = 1 + (this.coating.weightGain * this.startingParticle.density / this.coating.density);
+      let step2 = Math.pow(this.startingParticle.diameter / 2, 3);
+      let step3 = step1 * step2;
+      return Math.pow(step3, 1.0/3.0) * 2;
+    }
+  
+    get density() {
+      let totalWeightGain = 1 + this.coating.weightGain;
+      return (1 / totalWeightGain * this.startingParticle.density) + (this.coating.weightGain / totalWeightGain * this.coating.density);
+    }
+    
+    get assay() {
+      // we use one gram as the mass
+      let batch = 1; 
+      let apiStart = (this.startingParticle.assay) ? this.startingParticle.assay * batch : 0;
+      let apiAdded = batch * this.coating.drugWeightGain;
+      let endWeight = batch * (1 + this.coating.weightGain);
+      return (apiStart + apiAdded) / endWeight;
+    }
+    
+    get filmThickness() {
+      return (this.diameter - this.startingParticle.diameter) / 2;
+    }
+    
+    get coatingCoverage() {
+      return this.coatingWeight / this.startingParticle.totalSurfaceArea;
+    }
+    
+    get surfaceAreaToFilmThickness() {
+       return this.coatedParticle.totalSurfaceArea / this.filmThickness;
+    }
+    
+    get totalWeight() {
+      return this.startingParticle.totalWeight * (1 + this.coating.weightGain);
+    }
+    
+    get coatingWeight() {
+      return this.startingParticle.totalWeight * this.coating.weightGain;
+    }
+    
+    get coatedParticle() {
+      let particle = new Particle(this.diameter, this.density, this.assay);
+      particle.totalWeight = this.totalWeight;
+      return particle;
+    }
+  }
+  
+  class Capsule {
+    
+    constructor(particle, dose, capsuleVolume) {
+      this.particle = particle || new Particle();
+      this.dose = dose || 0.25;
+      this.capsuleVolume = capsuleVolume || 0.000005;
+      this.maxFillPortion = 0.85;
+    }
+    
+    get doseFillWeight() {
+      return this.dose / this.particle.assay;
+    }
+    
+    get doseFillVolume() {
+      return this.doseFillWeight / this.particle.bulkDensity;
+    }
+    
+    get capsuleCount() {
+      return Math.ceil(this.fillVolume / this.restrictedCapsuleVolume);
+    }
+    
+    get capsuleFillWeight() {
+      return this.doseFillWeight / this.capsuleCount;
+    }
+    
+    get capsuleFillVolume() {
+      return this.doseFillVolume / this.capsuleCount;
+    }
+    
+    get capsuleFillPercent() {
+      return this.capsuleFillVolume / this.capsuleVolume;
+    }
+    
+    get restrictedCapsuleVolume () {
+      return this.maxFillPortion * this.capsuleVolume;
+    }
+    
+  }
+  
+</script>

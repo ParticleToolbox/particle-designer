@@ -1,0 +1,368 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="chartjs-import.html">
+
+<dom-module id="overview-page">
+  <template>
+    <style>
+      
+      .section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: white;
+        color: var(--secondary-text-color);
+      }
+      
+      .section:nth-child(odd) {
+        background-color: var(--background-color);
+      }
+      
+      .description, 
+      .graphic {
+        flex-grow: 1;
+        max-width: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      
+      .description {
+        padding: 0px 16px 16px 16px;
+        text-align: justify;
+      }
+        
+      .full {
+        max-width: 900px;
+      }
+      
+      .dual-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 900px;
+      }
+      
+      .graphic {
+        order: 2;
+        align-items: center;
+        min-height: 196px;
+      }
+      
+      .headline {
+        @apply(--paper-font-headline);
+        color: var(--primary-color);
+        padding: 16px 0px;
+      }
+      
+      .subhead {
+        @apply(--paper-font-title);
+      }
+      
+      iron-icon {
+        width: 196px;
+        height: 196px;
+        stroke: var(--icon-color);
+      }
+      
+      #coatingChart, 
+      #weightChart {
+        max-width: 300px;
+        max-height: 256px;
+      }
+      
+      .buttons {
+        display: flex;
+        padding: 24px 0px;
+        justify-content: flex-end;
+      }
+      
+      .buttons a {
+        color: var(--secondary-text-color);
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+        text-decoration: none;
+      }
+      
+      .designer_button {
+        color: white;
+        background-color: var(--primary-color);
+      }
+      
+      @media(min-width: 600px) {
+        .section {
+          flex-direction: row;
+          min-height: 320px;
+        }
+        
+        .graphic {
+          order: 1;
+        }
+        
+        .dual-container > div {
+          max-width: 402px;
+          padding: 0px 24px;
+        }
+        
+        .description {
+          order: 1;
+          padding: 16px 48px;
+        }
+        
+        .description-text {
+          padding: 0px 32px 32px 32px;
+        }
+      }
+    </style>
+    
+    <div class='section'>
+      <div class='description full'>
+        <div class='headline'>Tablet Designer</div>
+        <div class='description-text'>Through four simple measurments the Coating Pan Designer estimates the volume of the coating pan.
+        You can than explore how different tablet and batch sizes will fit into the coating pan.</div>
+      </div>
+      <div></div>
+    </div>
+
+    <div class='section'>
+      <div class='description'>
+        <div class='headline'>Tablet Dimensions</div>
+        <div>The first two measurments are the main pan diameter and the diameter of the pan opening. Together these
+        two dimensions define the brim height. The brim height is important because it defines the maximum batch fill before 
+        tablet fall out of the coating pan.</div>
+      </div>
+      <div class='graphic'>
+        <iron-icon icon='icons:oval-tablet'></iron-icon>
+      </div>
+    </div>
+    
+    <div class='section'>
+      <div class='graphic'>
+        <iron-icon icon='icons:deep-concavity'></iron-icon>
+      </div>
+      <div class='description'>
+        <div class='headline'>Tablet Thickness</div>
+        <div>The last dimensions define the width (front opening to back) of the coating pan. 
+        The width at the brim is the length from the brim (front opening) to the back wall. 
+        We also define the width of the perforated wall. 
+        These two dimensions together define the conical shape of the coating pan.
+        </div>
+      </div>
+    </div>
+    
+    <div class='section'>
+      <div class='description full'>
+        <div class='headline'>Calculations</div>
+        <div class='dual-container'>
+          <div>
+            <div class='subhead'>Tablet</div>
+            <div>The brim volume is estimated based on the coating size and shape. 
+              Keep in mind the brim volume is the maximum volume.
+            </div>
+          </div>
+          <div>
+            <div class='subhead'>Tooling</div>
+            <div>The brim volume is estimated based on the coating size and shape. 
+            Keep in mind the brim volume is the maximum volume.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class='section'>
+      <div class='graphic'>
+         <canvas id='weightChart'></canvas>
+      </div>
+      <div class='description'>
+        <div class='headline'>Tablet Weight</div>
+        <div>For determining the coating pan fill the two important characteristics of the tablets is the total weight
+        and the bulk density which together define the volume of tablets. The graph provides a grey target zone for 
+        an ideal batch size for the current coating pan.</div>
+      </div>
+    </div>
+    
+    <div class='section'>
+      <div class='description'>
+        <div class='headline'>Coating Details</div>
+        <div>For determining the coating pan fill the two important characteristics of the tablets is the total weight
+        and the bulk density which together define the volume of tablets. The graph provides a grey target zone for 
+        an ideal batch size for the current coating pan.</div>
+      </div>
+      <div class='graphic'>
+         <canvas id='coatingChart'></canvas>
+      </div>
+    </div>
+    
+    <div class='section'>
+      <div class='description full'>
+        <div class='headline'>Get Started</div>
+        <div>Get started by measuring four dimensions of a coating pan and esimating how different tablets and batch sizes
+        will fill the pan. If your not sure where to start you can check out the library of coating pans already measured. </div>
+        
+        <div class='buttons'>
+          <a href='#/library/'>
+            <paper-button class='library_button'>Tablet Library</paper-button>
+          </a>
+          <a href='#/designer/'>
+            <paper-button class='designer_button'>Tablet Designer</paper-button>
+          </a>
+        </div>
+      </div>
+      
+    </div>
+    
+  </template>
+
+  <script>
+    Polymer({
+      is: 'overview-page',
+      
+      ready: function() {
+        new Chart(this.$.weightChart, {
+            type: 'line',
+            data: {
+              datasets: [
+                {
+                  fill: false,
+                  pointRadius: 0,
+                  borderWidth: 36,
+                  borderCapStyle: 'round',
+                  data: [{x:300, y:1.01}, {x:450, y:1.52}]
+                }, 
+                {
+                  fill: false,
+                  pointRadius: 6,
+                  pointBackgroundColor: '#16a085',
+                  data: [{x:375, y:1.27}]
+                }
+              ],
+            },
+            options: {
+              maintainAspectRatio: false,
+              legend: {
+                  display: false
+              },
+              tooltips: {
+                  enabled: false
+              },
+              hover: {
+                  mode: ''
+              },
+              scales: {
+                xAxes: [{
+                  type: 'linear',
+                  position: 'bottom',
+                  ticks: {
+                    min: 200, 
+                    max: 600, 
+                    fixedStepSize: 100,
+                  }, 
+                  scaleLabel: {
+                    display: true,
+                    labelString: 'Weight (mg)'
+                  }
+                }], 
+                yAxes: [{
+                  type: 'linear',
+                  ticks: {
+                    min: 0, 
+                    max: 2.5, 
+                    fixedStepSize: 0.5,
+                  }, 
+                  scaleLabel: {
+                    display: true,
+                    labelString: 'Density (g/ml)'
+                  }
+                }]
+              }
+          }
+          });
+          
+        new Chart(this.$.coatingChart, {
+          type: 'line',
+          data: {
+            datasets: [{
+              fill: false,
+              pointRadius: 0,
+              borderWidth: 36,
+              borderCapStyle: 'round',
+              data: [
+                  {
+                    x: 2,
+                    y: 2.5
+                  }, 
+                  {
+                    x: 4,
+                    y: 6
+                  }]
+            }, {
+              fill: false,
+              pointRadius: 6,
+              pointBackgroundColor: '#16a085',
+              data: [{
+                x: 3,
+                y: 4.2
+              }]
+            }],
+          },
+          options: {
+            maintainAspectRatio: false,
+            legend: {
+              display: false
+            },
+            tooltips: {
+              enabled: false
+            },
+            hover: {
+              mode: ''
+            },
+            scales: {
+              xAxes: [{
+                type: 'linear',
+                position: 'bottom',
+                ticks: {
+                  min: 0,
+                  suggestedMax: 7.5,
+                  fixedStepSize: 2.5,
+                },
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Weight Gain (%)'
+                }
+              }],
+              yAxes: [{
+                type: 'linear',
+                ticks: {
+                  min: 0,
+                  max: 15,
+                  fixedStepSize: 2.5,
+                },
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Coverage (mg/cm2)'
+                }
+              }]
+            }
+          }
+        });
+      }
+
+     
+    });
+  </script>
+</dom-module>

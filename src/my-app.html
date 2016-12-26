@@ -9,92 +9,165 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<!--<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">-->
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="my-icons.html">
+<link rel="import" href="particle.html">
 
 <dom-module id="my-app">
   <template>
+    
     <style>
       :host {
-        --app-primary-color: #4285f4;
-        --app-secondary-color: black;
+        --dark-color:               #512DA8;
+        --primary-color:            #673AB7;
+        --accent-color:             #009688;
+        
+        --text-color:               #757575;
+        --secondary-text-color:     #757575;
+        --disabled-text-color:      #BDBDBD;
+        --light-text-color:         #FFFFFF;
+        
+        --background-color:         #eeeeee;
+        --divider-color:            #cfd8dc;
+        --icon-color:               #9E9E9E;
 
         display: block;
+        color: var(--text-color);
+        background-color: var(--background-color);
       }
-
-      app-header {
-        color: #fff;
-        background-color: var(--app-primary-color);
+      
+      app-drawer {
+        background-color: var(--background-color);
       }
-      app-header paper-icon-button {
-        --paper-icon-button-ink-color: white;
+      
+      app-drawer iron-selector {
+        display: flex;
+        flex-direction: column;
       }
-
-      .drawer-list {
-        margin: 0 20px;
+      
+      .submenu {
+        margin-left: 24px;
       }
-
-      .drawer-list a {
-        display: block;
-        padding: 0 16px;
+      
+      app-drawer a {
+        display: flex;
+        align-items: center;
+        height: 48px;
+        padding-left: 16px;
+        color: var(--text-color);
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
         text-decoration: none;
-        color: var(--app-secondary-color);
-        line-height: 40px;
       }
-
-      .drawer-list a.iron-selected {
-        color: black;
+      
+      app-drawer a.iron-selected {
+        color: var(--dark-color);
         font-weight: bold;
       }
+      
+      app-header {
+        opacity: 1;
+        max-height: 64px;
+        transition: opacity 0.75s;
+      }
+      
+      app-header.hide {
+        opacity: 0;
+        max-height: 0px;
+        transition: opacity 0.75s, max-height: 0.1s 0.75s;
+        overflow: hidden;
+      }
+      
+      app-toolbar {
+        @apply(--paper-font-title);
+        color: var(--light-text-color);
+        background-color: var(--primary-color);
+        text-transform: capitalize;
+      }
+      
+      app-toolbar a {
+        color: white;
+        text-decoration: none;
+      }
+      
+      iron-pages {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      paper-spinner {
+        margin: 64px auto;
+      }
+      
+      [hidden] {
+        display: none !important;
+      }
+      
+      @media (min-width: 600px) {
+        .submenu {
+          display: none;
+        }
+      }
+      
+      @media print {
+        app-header {
+          display: none;
+        }
+      }
+      
     </style>
-
-    <app-location route="{{route}}"></app-location>
-    <app-route
-        route="{{route}}"
-        pattern="/:page"
-        data="{{routeData}}"
-        tail="{{subroute}}"></app-route>
-
-    <app-drawer-layout fullbleed>
+    
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route>
+  
+    <app-drawer-layout fullbleed force-narrow>
       <!-- Drawer content -->
-      <app-drawer id="drawer">
+      <app-drawer id='drawer'>
         <app-toolbar>Menu</app-toolbar>
-        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="/view1">View One</a>
-          <a name="view2" href="/view2">View Two</a>
-          <a name="view3" href="/view3">View Three</a>
+        <iron-selector selected="[[page]]" attr-for-selected="page" class="drawer-list" role="navigation"  on-iron-select='_closeDrawer'>
+          <a page="overview" href="#/overview">Overview</a>
+          <a page="designer" href="#/designer">Designer</a>
+          <a page="designer" href="#/report">Report</a>
+          <a page="library" href="#/library">Library</a>
         </iron-selector>
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout has-scrolling-region>
+      <app-header-layout>
 
-        <app-header condenses reveals effects="waterfall">
+        <app-header fixed effects="waterfall">
           <app-toolbar>
-            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title>Particle [[page]]</div>
           </app-toolbar>
         </app-header>
 
-        <iron-pages
-            selected="[[page]]"
-            attr-for-selected="name"
-            fallback-selection="view404"
-            role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
-          <my-view404 name="view404"></my-view404>
+        <iron-pages id='pages' attr-for-selected='page' fallback-selection="spinner" role="main">
+          
+          <paper-spinner page='spinner' alt="Loading Particle Designer..." active></paper-spinner>
+          
+          <overview-page page='overview'></overview-page>
+          
+          <designer-page page='designer' route='[[designerRoute]]'></designer-page>
+          
+          <report-page page='report' ></report-page>
+          
+          <library-page page='library'></library-page>
+          
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
@@ -102,37 +175,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     Polymer({
+      
       is: 'my-app',
 
       properties: {
+        
         page: {
           type: String,
           reflectToAttribute: true,
-          observer: '_pageChanged',
+          observer: '_pageChanged'
         },
       },
 
+      _pageChanged: function(page) {
+        
+        this.$.pages.set('selected', 'spinner');
+        
+        let resolvedPageUrl = this.resolveUrl(page + '-page.html');
+        this.importHref(resolvedPageUrl, function(){
+          this.$.pages.set('selected', page);
+          }, this._showOverview, true);
+      },
+
       observers: [
-        '_routePageChanged(routeData.page)',
+        '_routePageChanged(routeData.page)'
       ],
 
       _routePageChanged: function(page) {
-        this.page = page || 'view1';
-
-        if (!this.$.drawer.persistent) {
-          this.$.drawer.close();
-        }
+        this.page = page || 'overview';
       },
 
-      _pageChanged: function(page) {
-        // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
-        this.importHref(resolvedPageUrl, null, this._showPage404, true);
+      _showOverview: function() {
+        this.set('routeData.page', 'overview');
       },
-
-      _showPage404: function() {
-        this.page = 'view404';
-      },
+      
+      _closeDrawer: function() {
+        this.$.drawer.close();
+      }, 
+      
     });
   </script>
 </dom-module>
